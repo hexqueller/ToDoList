@@ -1,0 +1,23 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ToDoList-app
+spec:
+  selector:
+    matchLabels:
+      app: ToDoList-app
+  template:
+    metadata:
+      labels:
+        app: ToDoList-app
+    spec:
+      containers:
+      - name: ToDoList-app
+        image: <Image> #
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: <Port> #
