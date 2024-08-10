@@ -3,9 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for("static", filename="css/main.css") }}">
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
+    <header>
+        <img src="static/images/icon.jpg" alt="Profile Picture">
+        <div class="buttons">
+            <button>Кнопка 1</button>
+            <button>Кнопка 2</button>
+            <button>Кнопка 3</button>
+        </div>
+    </header>
     {% block body %}{% endblock %}
 </body>
 </html>
