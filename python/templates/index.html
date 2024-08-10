@@ -5,5 +5,10 @@ Welcome
 {% endblock %}
 
 {% block body %}
-<h1>Hello world!</h1>
+<div class="container">
+    <form method="POST" action="/">
+        <input type="text" name="text" id="inputField" placeholder="Enter name here">
+        <button type="submit" id="submitButton">Submit</button>
+    </form>
+</div>
 {% endblock %}
