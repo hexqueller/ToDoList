@@ -33,7 +33,7 @@ spec:
     app: Frontend-Deployment
   ports:
   - port: 8080
-    targetPort: 80
+    targetPort: 5000
 
 
 ---
