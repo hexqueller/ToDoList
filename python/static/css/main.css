@@ -3,6 +3,7 @@ body {
     background: #24292e;
     margin: 0;
     padding: 0;
+    color: #e6edf3
 }
 header {
     display: flex;
@@ -23,7 +24,7 @@ header .buttons {
 }
 header .buttons button {
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #2d3139;
     color: white;
     border: none;
     border-radius: 5px;
