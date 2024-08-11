@@ -12,13 +12,13 @@ services:
   backend:
     build: ./golang
     restart: always
-    depends_on:
-    - pg 
+  #   depends_on:
+  #   - pg 
 
-  pg:
-    image: postgres:latest
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ToDoList
+  # pg:
+  #   image: postgres:latest
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: ToDoList
