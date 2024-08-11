@@ -4,8 +4,10 @@ services:
   frontend:
     build: ./python
     restart: always
+    ports:
+      - "80:5000"
     depends_on:
-    - backend 
+      - backend
 
   backend:
     build: ./golang
@@ -16,3 +18,7 @@ services:
   pg:
     image: postgres:latest
     restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ToDoList
