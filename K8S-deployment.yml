@@ -57,6 +57,9 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        envFrom:
+        - configMapRef:
+            name: configmap
         ports:
         - containerPort: 80
 
@@ -76,37 +79,51 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: PG-Deployment
+  name: pg-statefulset
 spec:
   selector:
     matchLabels:
-      app: PG-Deployment
+      app: pg-statefulset
+  serviceName: <ServiceName>
+  replicas: 2
   template:
     metadata:
       labels:
-        app: PG-Deployment
+        app: pg-statefulset
     spec:
       containers:
-      - name: PG-Deployment
-        image: <Image> #
+      - name: pg-statefulset
+        image: registry.k8s.io/nginx-slim:0.8
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
         ports:
         - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: PG-Deployment
+  name: pg-statefulset
 spec:
   type: ClusterIP
   selector:
-    app: PG-Deployment
+    app: pg-statefulset
   ports:
   - port: <Port>
     targetPort: <Target Port>

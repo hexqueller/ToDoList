@@ -21,7 +21,10 @@ def index():
 
 @app.route('/<string:name>/<int:id>')
 def workflow(name, id):
-    return 'GET ' + name + ' CODE ' + str(id)
+    if str(id) != generate_id_key(name):
+        return "403"
+    else:
+        return render_template('master.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

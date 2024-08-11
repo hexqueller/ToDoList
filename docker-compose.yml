@@ -13,9 +13,9 @@ services:
     build: ./golang
     restart: always
   #   depends_on:
-  #   - pg 
+  #   - database 
 
-  # pg:
+  # database:
   #   image: postgres:latest
   #   restart: always
   #   environment:
