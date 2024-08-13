@@ -1,5 +1,11 @@
 from flask import Flask, render_template, url_for, request, redirect
 import hashlib
+import os
+
+config = {
+    "port": os.environ.get('PORT', 5000),
+    "debug": os.environ.get('DEBUG', False)
+}
 
 def generate_id_key(text):
     hash_object = hashlib.sha256(text.encode())
@@ -27,4 +33,4 @@ def workflow(name, id):
         return render_template('master.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=config["port"], debug=config["debug"])
