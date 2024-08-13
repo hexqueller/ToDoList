@@ -5,3 +5,10 @@ build:
 
 run: build
 	docker-compose down && docker-compose up --build
+
+kbuild: build:
+	minikube image build golang/ -t back:dev
+	minikube image build python/ -t front:dev
+
+krun: kbuild
+	kubectl apply -f K8S-deployment.yml
