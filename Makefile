@@ -11,4 +11,4 @@ kbuild: build
 	minikube image build python/ -t front:dev
 
 krun: kbuild
-	kubectl delete -f K8S-deployment.yml && kubectl apply -f K8S-deployment.yml
+	kubectl delete -f k8s-deployment.yml && kubectl apply -f k8s-deployment.yml
