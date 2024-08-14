@@ -88,13 +88,13 @@ func handleUserExists(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fmt.Println("POSTGRES_USER:", os.Getenv("POSTGRES_USER"))
-	fmt.Println("POSTGRES_PASSWORD:", os.Getenv("POSTGRES_PASSWORD"))
-	fmt.Println("POSTGRES_DB:", os.Getenv("POSTGRES_DB"))
-
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
 	dbname := os.Getenv("POSTGRES_DB")
+
+	fmt.Println("POSTGRES_USER:", user)
+	fmt.Println("POSTGRES_PASSWORD:", password)
+	fmt.Println("POSTGRES_DB:", dbname)
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -111,6 +111,17 @@ func main() {
 	}
 
 	fmt.Println("DB successfully connected!")
+
+	// Проверка существования таблицы
+	var tableExists bool
+	err = db.QueryRow("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')").Scan(&tableExists)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !tableExists {
+		log.Fatal("Table 'users' does not exist")
+	}
 
 	rows, err := db.Query("SELECT id, name FROM users")
 	if err != nil {
