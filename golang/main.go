@@ -1,10 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+
+	_ "github.com/lib/pq"
 )
 
 type RequestData struct {
@@ -23,6 +27,11 @@ type UserExistsResponse struct {
 var users = map[string]string{
 	"Dmitry": "12345", // Заглушка с одним пользователем
 }
+
+const (
+	host = "database"
+	port = 5432
+)
 
 func handleRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -79,6 +88,52 @@ func handleUserExists(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	fmt.Println("POSTGRES_USER:", os.Getenv("POSTGRES_USER"))
+	fmt.Println("POSTGRES_PASSWORD:", os.Getenv("POSTGRES_PASSWORD"))
+	fmt.Println("POSTGRES_DB:", os.Getenv("POSTGRES_DB"))
+
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbname := os.Getenv("POSTGRES_DB")
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("DB successfully connected!")
+
+	rows, err := db.Query("SELECT id, name FROM users")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var name string
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("ID: %d, Name: %s\n", id, name)
+	}
+
+	// Обработка ошибок после завершения итерации
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	http.HandleFunc("/api", handleRequest)
 	http.HandleFunc("/api/user", handleUserExists)
 

@@ -1,7 +1,7 @@
 .SILENT:
 
 build:
-	CGO_ENABLED=0 GOOS=linux go build -o golang/server golang/main.go
+	go mod download && CGO_ENABLED=0 GOOS=linux go build -o golang/server golang/main.go
 
 minikubeBuild: build
 	minikube image build golang/ -t back:dev
@@ -11,4 +11,4 @@ run: minikubeBuild
 	kubectl apply -f .
 
 restart: minikubeBuild
-	kubectl delete -f && kubectl apply -f .
+	kubectl delete -f . && kubectl apply -f .

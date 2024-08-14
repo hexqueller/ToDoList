@@ -16,7 +16,7 @@ def generate_id_key(text):
     return key_str[::-1]
 
 def check_user_exists(name):
-    backend = "backend-deployment"
+    backend = "backend"
     port = "1234"
     response = requests.get(f"http://{backend}:{port}/api/user?name={name}")
     if response.status_code == 200:

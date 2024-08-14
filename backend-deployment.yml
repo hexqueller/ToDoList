@@ -16,6 +16,9 @@ spec:
       containers:
       - name: backend-deployment
         image: back:dev
+        envFrom:
+        - configMapRef:
+            name: database-config
         resources:
           limits:
             memory: "128Mi"
@@ -27,7 +30,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-deployment
+  name: backend
 spec:
   type: ClusterIP
   selector:
