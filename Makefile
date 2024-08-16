@@ -7,6 +7,8 @@ minikubeBuild:
 run: minikubeBuild
 	helm install project helmChart/
 
-restart:
+delete:
 	helm delete project
+
+restart: delete
 	$(MAKE) run

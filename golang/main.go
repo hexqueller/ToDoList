@@ -24,10 +24,6 @@ type UserExistsResponse struct {
 	Exists bool `json:"exists"`
 }
 
-var users = map[string]string{
-	"Dmitry": "12345", // Заглушка с одним пользователем
-}
-
 const (
 	host = "database"
 	port = 5432
@@ -58,21 +54,36 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleUserExists(w http.ResponseWriter, r *http.Request) {
+func handleUserExists(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
 	name := r.URL.Query().Get("name")
-	if name == "" {
-		http.Error(w, "Missing name parameter", http.StatusBadRequest)
+	key := r.URL.Query().Get("id")
+	if name == "" || key == "" {
+		http.Error(w, "Missing name or id parameter", http.StatusBadRequest)
 		return
 	}
 
-	exists := false
-	if _, ok := users[name]; ok {
-		exists = true
+	var exists bool
+	var dbKey string
+	err := db.QueryRow("SELECT id FROM users WHERE name = $1", name).Scan(&dbKey)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			exists = false
+		} else {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		if dbKey == key {
+			exists = true
+		} else {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
 	}
 
 	response := UserExistsResponse{
@@ -80,11 +91,53 @@ func handleUserExists(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(response)
+	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		return
 	}
+}
+
+func createTablesIfNotExist(db *sql.DB) error {
+	// Проверка существования таблицы users
+	var tableExists bool
+	err := db.QueryRow("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')").Scan(&tableExists)
+	if err != nil {
+		return err
+	}
+
+	if !tableExists {
+		_, err = db.Exec(`CREATE TABLE users (
+			id SERIAL PRIMARY KEY,
+			name TEXT NOT NULL
+		)`)
+		if err != nil {
+			return err
+		}
+		fmt.Println("Table 'users' created")
+	}
+
+	// Проверка существования таблицы Workflow
+	err = db.QueryRow("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'workflow')").Scan(&tableExists)
+	if err != nil {
+		return err
+	}
+
+	if !tableExists {
+		_, err = db.Exec(`CREATE TABLE workflow (
+			id SERIAL PRIMARY KEY,
+			username TEXT NOT NULL,
+			time_to_do TEXT NOT NULL,
+			text TEXT NOT NULL,
+			created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`)
+		if err != nil {
+			return err
+		}
+		fmt.Println("Table 'workflow' created")
+	}
+
+	return nil
 }
 
 func main() {
@@ -112,15 +165,9 @@ func main() {
 
 	fmt.Println("DB successfully connected!")
 
-	// Проверка существования таблицы
-	var tableExists bool
-	err = db.QueryRow("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')").Scan(&tableExists)
+	err = createTablesIfNotExist(db)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	if !tableExists {
-		log.Fatal("Table 'users' does not exist")
 	}
 
 	rows, err := db.Query("SELECT id, name FROM users")
@@ -146,7 +193,9 @@ func main() {
 	}
 
 	http.HandleFunc("/api", handleRequest)
-	http.HandleFunc("/api/user", handleUserExists)
+	http.HandleFunc("/api/user", func(w http.ResponseWriter, r *http.Request) {
+		handleUserExists(w, r, db)
+	})
 
 	fmt.Println("Starting server on :1234")
 	log.Fatal(http.ListenAndServe(":1234", nil))

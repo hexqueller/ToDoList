@@ -15,14 +15,21 @@ def generate_id_key(text):
     key_str = f"{key:08}"
     return key_str[::-1]
 
-def check_user_exists(name):
+def check_user(name, id):
     backend = "backend"
     port = "1234"
-    response = requests.get(f"http://{backend}:{port}/api/user?name={name}")
+    response = requests.get(f"http://{backend}:{port}/api/user?name={name}&id={id}")
+
     if response.status_code == 200:
         data = response.json()
-        return data.get("exists", False)
-    return False
+        if data.get("exists", False):
+            return 0
+        else:
+            return 1
+    elif response.status_code == 403:
+        return 2
+    else:
+        return 1
 
 app = Flask(__name__)
 
@@ -40,10 +47,13 @@ def workflow(name, id):
     if str(id) != generate_id_key(name):
         return "403"
     else:
-        if check_user_exists(name):
+        exist = check_user(name, id)
+        if exist == 0:
             return render_template('index.html')
+        elif exist == 1:
+            return "User not created"
         else:
-            return render_template('master.html')
+            return "403 id not true"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=config["port"], debug=config["debug"])
