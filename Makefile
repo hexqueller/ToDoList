@@ -1,14 +1,12 @@
 .SILENT:
 
-# build:
-# 	go mod download && CGO_ENABLED=0 GOOS=linux go build -o golang/server golang/main.go
-
 minikubeBuild:
 	minikube image build golang/ -t back:dev
 	minikube image build python/ -t front:dev
 
 run: minikubeBuild
-	kubectl apply -f .
+	helm install project helmChart/
 
-restart: minikubeBuild
-	kubectl delete -f . && kubectl apply -f .
+restart:
+	helm delete project
+	$(MAKE) run

@@ -1,0 +1,60 @@
+---
+deployments:
+  - name: frontend
+    replicas: 2
+    image:
+      repository: front
+      tag: dev
+    env:
+      PORT: "5000"
+      DEBUG: "False"
+    resources:
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+    port: 5000
+    extport: 80
+    service: LoadBalancer
+
+  - name: backend
+    replicas: 2
+    image:
+      repository: back
+      tag: dev
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ToDoList
+    resources:
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+    port: 1234
+    extport: 1234
+    service: ClusterIP
+
+  - name: database
+    replicas: 1
+    image:
+      repository: postgres
+      tag: latest
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ToDoList
+    resources:
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+    port: 5432
+    extport: 5432
+    service: ClusterIP

@@ -1,0 +1,31 @@
+{{- range .Values.deployments }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .name }}-deployment
+spec:
+  replicas: {{ .replicas }}
+  selector:
+    matchLabels:
+      app: {{ .name }}-deployment
+  template:
+    metadata:
+      labels:
+        app: {{ .name }}-deployment
+    spec:
+      containers:
+      - name: {{ .name }}-deployment
+        image: "{{ .image.repository }}:{{ .image.tag }}"
+{{- if .env }}
+        env:
+        {{- range $key, $val := .env }}
+        - name: {{ $key | quote }}
+          value: {{ $val | quote }}
+        {{- end }}
+{{- end }}
+        resources:
+{{ toYaml .resources | indent 10 }}
+        ports:
+        - containerPort: {{ .port }}
+{{- end }}
