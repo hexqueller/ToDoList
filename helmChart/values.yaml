@@ -1,7 +1,7 @@
 ---
 deployments:
   - name: frontend
-    replicas: 2
+    replicas: 1
     image:
       repository: front
       tag: dev
@@ -20,7 +20,7 @@ deployments:
     service: LoadBalancer
 
   - name: backend
-    replicas: 2
+    replicas: 1
     image:
       repository: back
       tag: dev
