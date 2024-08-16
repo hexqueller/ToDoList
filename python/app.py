@@ -5,7 +5,9 @@ import requests
 
 config = {
     "port": os.environ.get('PORT', 5000),
-    "debug": os.environ.get('DEBUG', False)
+    "debug": os.environ.get('DEBUG', False),
+    "backend": os.environ.get('BACKEND', 'backend'),
+    "backendport": os.environ.get('BACKENDPORT', 1234)
 }
 
 def generate_id_key(text):
@@ -16,10 +18,9 @@ def generate_id_key(text):
     return key_str[::-1]
 
 def check_user(name, id):
-    backend = "backend"
-    port = "1234"
-    response = requests.get(f"http://{backend}:{port}/api/user?name={name}&id={id}")
-
+    backend = config["backend"]
+    backendport = config["backendport"]
+    response = requests.get(f"http://{backend}:{backendport}/api/user?name={name}&id={id}")
     if response.status_code == 200:
         data = response.json()
         if data.get("exists", False):
@@ -30,6 +31,21 @@ def check_user(name, id):
         return 2
     else:
         return 1
+
+def create_user(name, id):
+    backend = config["backend"]
+    backendport = config["backendport"]
+    url = f"http://{backend}:{backendport}/api/create_user"
+    payload = {"name": name, "id": id}
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        return True, data.get("message", "User created successfully")
+    else:
+        return False, f"Failed to create user: {response.status_code}"
 
 app = Flask(__name__)
 
@@ -51,9 +67,13 @@ def workflow(name, id):
         if exist == 0:
             return render_template('index.html')
         elif exist == 1:
-            return "User not created"
+            success, message = create_user(name, str(id))
+            if success:
+                return render_template('index.html')
+            else:
+                return message
         else:
-            return "403 id not true"
+            return "403"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=config["port"], debug=config["debug"])

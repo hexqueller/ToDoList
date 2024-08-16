@@ -1,12 +1,15 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -28,6 +31,22 @@ const (
 	host = "database"
 	port = 5432
 )
+
+func generateIDKey(text string) string {
+	hash := sha256.Sum256([]byte(text))
+	hashHex := hex.EncodeToString(hash[:])
+	key, _ := strconv.ParseInt(hashHex[:8], 16, 64)
+	keyStr := fmt.Sprintf("%08d", key)
+	return reverseString(keyStr)
+}
+
+func reverseString(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
+}
 
 func handleRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -69,7 +88,7 @@ func handleUserExists(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	var exists bool
 	var dbKey string
-	err := db.QueryRow("SELECT id FROM users WHERE name = $1", name).Scan(&dbKey)
+	err := db.QueryRow("SELECT user_id FROM users WHERE name = $1", name).Scan(&dbKey)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			exists = false
@@ -98,6 +117,43 @@ func handleUserExists(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 }
 
+func handleCreateUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var reqData RequestData
+	err := json.NewDecoder(r.Body).Decode(&reqData)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	generatedID := generateIDKey(reqData.Name)
+	if reqData.Key != generatedID {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	_, err = db.Exec("INSERT INTO users (name, user_id) VALUES ($1, $2)", reqData.Name, reqData.Key)
+	if err != nil {
+		http.Error(w, "Failed to create user", http.StatusInternalServerError)
+		return
+	}
+
+	response := ResponseData{
+		Message: fmt.Sprintf("User %s created successfully", reqData.Name),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}
+
 func createTablesIfNotExist(db *sql.DB) error {
 	// Проверка существования таблицы users
 	var tableExists bool
@@ -109,7 +165,8 @@ func createTablesIfNotExist(db *sql.DB) error {
 	if !tableExists {
 		_, err = db.Exec(`CREATE TABLE users (
 			id SERIAL PRIMARY KEY,
-			name TEXT NOT NULL
+			name TEXT NOT NULL,
+			user_id TEXT NOT NULL
 		)`)
 		if err != nil {
 			return err
@@ -195,6 +252,9 @@ func main() {
 	http.HandleFunc("/api", handleRequest)
 	http.HandleFunc("/api/user", func(w http.ResponseWriter, r *http.Request) {
 		handleUserExists(w, r, db)
+	})
+	http.HandleFunc("/api/create_user", func(w http.ResponseWriter, r *http.Request) {
+		handleCreateUser(w, r, db)
 	})
 
 	fmt.Println("Starting server on :1234")
