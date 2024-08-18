@@ -1,7 +1,6 @@
 ---
 deployments:
   - name: frontend
-    replicas: 1
     image:
       repository: front
       tag: dev
@@ -20,7 +19,6 @@ deployments:
     service: LoadBalancer
 
   - name: backend
-    replicas: 1
     image:
       repository: back
       tag: dev
@@ -40,7 +38,6 @@ deployments:
     service: ClusterIP
 
   - name: database
-    replicas: 1
     image:
       repository: postgres
       tag: latest

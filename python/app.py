@@ -65,11 +65,11 @@ def workflow(name, id):
     else:
         exist = check_user(name, id)
         if exist == 0:
-            return render_template('index.html')
+            return render_template('master.html')
         elif exist == 1:
             success, message = create_user(name, str(id))
             if success:
-                return render_template('index.html')
+                return render_template('master.html')
             else:
                 return message
         else:
