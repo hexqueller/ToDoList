@@ -1,20 +1,20 @@
 {{- range .Values.deployments }}
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: {{ .kind | default "Deployment" }}
 metadata:
-  name: {{ .name }}-deployment
+  name: "{{ .name }}-{{ .kind | default "Deployment" }}"
 spec:
   selector:
     matchLabels:
-      app: {{ .name }}-deployment
+      app: "{{ .name }}-{{ .kind | default "Deployment" }}"
   template:
     metadata:
       labels:
-        app: {{ .name }}-deployment
+        app: "{{ .name }}-{{ .kind | default "Deployment" }}"
     spec:
       containers:
-      - name: {{ .name }}-deployment
+      - name: "{{ .name }}-{{ .kind | default "Deployment" }}"
         image: "{{ .image.repository }}:{{ .image.tag }}"
 {{- if .env }}
         env:

@@ -38,6 +38,7 @@ deployments:
     service: ClusterIP
 
   - name: database
+    kind: StatefulSet
     image:
       repository: postgres
       tag: latest

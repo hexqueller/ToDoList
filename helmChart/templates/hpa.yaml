@@ -8,8 +8,8 @@ metadata:
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: Deployment
-    name: {{ .name }}-deployment
+    kind: {{ .kind | default "Deployment" }}
+    name: "{{ .name }}-{{ .kind | default "Deployment" }}"
   minReplicas: 1
   maxReplicas: 5
   targetCPUUtilizationPercentage: 50

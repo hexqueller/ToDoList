@@ -7,7 +7,7 @@ metadata:
 spec:
   type: {{ .service }}
   selector:
-    app: {{ .name }}-deployment
+    app: "{{ .name }}-{{ .kind | default "Deployment" }}"
   ports:
   - port: {{ .extport }}
     targetPort: {{ .port }}
