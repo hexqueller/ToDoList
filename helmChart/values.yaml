@@ -55,3 +55,10 @@ deployments:
     port: 5432
     extport: 5432
     service: ClusterIP
+    volumeMounts:
+      - name: db-volume
+        mountPath: /var/lib/postgresql/data
+    volumes:
+      - name: db-volume
+        persistentVolumeClaim:
+          claimName: default-pvc

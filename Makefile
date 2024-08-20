@@ -19,3 +19,9 @@ stress:
 
 unstress:
 	kubectl delete pod load-generator-backend load-generator-frontend
+
+dockerpush:
+	docker build golang/ -t hexqueller/k8s-golang-backend
+	docker build python/ -t hexqueller/k8s-python-frontend
+	docker push hexqueller/k8s-python-frontend
+	docker push hexqueller/k8s-golang-backend

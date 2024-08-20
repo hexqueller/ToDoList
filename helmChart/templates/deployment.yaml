@@ -27,4 +27,26 @@ spec:
 {{ toYaml .resources | indent 10 }}
         ports:
         - containerPort: {{ .port }}
+{{- if .volumeMounts }}
+        volumeMounts:
+        {{- range .volumeMounts }}
+        - name: {{ .name | quote }}
+          mountPath: {{ .mountPath | quote }}
+        {{- end }}
+{{- end }}
+      volumes:
+{{- if .volumes }}
+      {{- range .volumes }}
+      - name: {{ .name | quote }}
+        {{- if .persistentVolumeClaim }}
+        persistentVolumeClaim:
+          claimName: {{ .persistentVolumeClaim.claimName | quote }}
+        {{- else if .emptyDir }}
+        emptyDir: {}
+        {{- else if .hostPath }}
+        hostPath:
+          path: {{ .hostPath.path | quote }}
+        {{- end }}
+      {{- end }}
+{{- end }}
 {{- end }}
