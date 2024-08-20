@@ -1,4 +1,5 @@
 {{- range .Values.deployments }}
+{{- if ne .name "database" }}
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
@@ -12,4 +13,5 @@ spec:
   minReplicas: 1
   maxReplicas: 5
   targetCPUUtilizationPercentage: 50
+{{- end }}
 {{- end }}
