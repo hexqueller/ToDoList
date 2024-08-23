@@ -1,8 +1,8 @@
 .SILENT:
 
 minikubeBuild:
-	minikube image build golang/ -t hexqueller/k8s-golang-backend
-	minikube image build python/ -t hexqueller/k8s-python-frontend
+	minikube image build golang/ -t hexqueller/k8s-golang-backend:dev
+	minikube image build python/ -t hexqueller/k8s-python-frontend:dev
 
 run: minikubeBuild
 	helm install project helmChart/

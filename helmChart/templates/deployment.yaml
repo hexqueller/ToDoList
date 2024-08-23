@@ -3,18 +3,18 @@
 apiVersion: apps/v1
 kind: {{ .kind | default "Deployment" }}
 metadata:
-  name: "{{ .name }}-{{ .kind | default "Deployment" }}"
+  name: "{{ .name }}-{{ .kind | default "Deployment" | lower }}"
 spec:
   selector:
     matchLabels:
-      app: "{{ .name }}-{{ .kind | default "Deployment" }}"
+      app: "{{ .name }}-{{ .kind | default "Deployment" | lower }}"
   template:
     metadata:
       labels:
-        app: "{{ .name }}-{{ .kind | default "Deployment" }}"
+        app: "{{ .name }}-{{ .kind | default "Deployment" | lower }}"
     spec:
       containers:
-      - name: "{{ .name }}-{{ .kind | default "Deployment" }}"
+      - name: "{{ .name }}-{{ .kind | default "Deployment" | lower }}"
         image: "{{ .image.repository }}:{{ .image.tag }}"
 {{- if .env }}
         env:

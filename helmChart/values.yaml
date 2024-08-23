@@ -62,4 +62,4 @@ deployments:
     volumes:
       - name: db-volume
         persistentVolumeClaim:
-          claimName: default-pvc
+          claimName: database-pvc
