@@ -70,3 +70,12 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+table {
+    border-collapse: collapse;
+    width: 50%;
+}
+th, td {
+    border: none;
+    text-align: center;
+    padding: 8px;
+}
