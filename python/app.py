@@ -54,14 +54,17 @@ def index():
     if request.method == 'POST':
         text = request.form['text']
         id = generate_id_key(text)
-        return redirect(url_for('workflow', name=text, id=id))
+        if not check_user(text, id):
+            return render_template('index.html', error_message=" Пользователь уже существует")
+        else:
+            return redirect(url_for('workflow', name=text, id=id))
     else:
         return render_template('index.html', error_message="")
 
 @app.route('/<string:name>/<int:id>')
 def workflow(name, id):
     if str(id) != generate_id_key(name):
-        return render_template('index.html', error_message="ошибка ключа")
+        return render_template('index.html', error_message=" Ошибка ключа")
     else:
         exist = check_user(name, id)
         if exist == 0:
@@ -73,7 +76,7 @@ def workflow(name, id):
             else:
                 return render_template('index.html', error_message=message)
         else:
-            return render_template('index.html', error_message="ошибка 403")
+            return render_template('index.html', error_message=" Ошибка 403")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=config["port"], debug=config["debug"])
